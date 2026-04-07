@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numba import njit
 
-@njit(cache=True)
+#@njit(cache=True)
 def sme_evolution(del_t,period_number, eta, k, gamma, x0, p0, feedback, filt=None):
     w_real = 50000 * 2*np.pi  #rad/s
     m_bead = 4.8e-18 #kg
@@ -55,6 +55,8 @@ def sme_evolution(del_t,period_number, eta, k, gamma, x0, p0, feedback, filt=Non
     phi_p = np.pi/2 - 2*phi
     x_rot = x
     p_rot = p
+    alpha_x_rot = x
+    alpha_p_rot = p 
     phi_rot = np.arctan2(p_rot,x_rot)
     phi_p_rot = np.pi/2 - 2*phi_rot
     
@@ -125,7 +127,7 @@ def sme_evolution(del_t,period_number, eta, k, gamma, x0, p0, feedback, filt=Non
                 x += (1/m*p*del_t) -8*eta*k*x*var_x*del_t + 2*var_x*del_Q 
                 p += (-m* w_sq*x*del_t) -8*eta*k*x*cov_xp*del_t + 2*cov_xp*del_Q
                 
-    
+        
                 
             var_x += ((2/m*cov_xp) - (8*eta*k*var_x**2)) * del_t
             var_p += ((-2*m*w_sq*cov_xp) + 2*k - (8*eta*k*cov_xp**2)) * del_t
@@ -136,22 +138,6 @@ def sme_evolution(del_t,period_number, eta, k, gamma, x0, p0, feedback, filt=Non
     
             alpha_x = x + (del_W/(np.sqrt(8*eta*k*del_t)))
             alpha_x_stream[i+1] = alpha_x
-    
-            if i >= 1:
-                alpha_p = m*(alpha_x_stream[i+1] - alpha_x_stream[i])/del_t
-            else:
-                alpha_p = 0.0
-            alpha_p_stream[i+1] = alpha_p
-    
-    
-            x_rot = x*np.cos(w*t_arr[i+1]) - p*np.sin(w*t_arr[i+1])
-            p_rot = x*np.sin(w*t_arr[i+1]) + p*np.cos(w*t_arr[i+1])
-    
-            
-            phi_rot = np.arctan2(p_rot, x_rot)
-            phi_p_rot = np.pi/2 - 2*phi_rot
-    
-            w_sq = w**2*(1 - 2*epsilon*np.cos(2*w*t_arr[i+1] + phi_p_rot))
             
             t_now = (i+1) * del_t
             t_arr[i+1] = t_now
@@ -163,6 +149,36 @@ def sme_evolution(del_t,period_number, eta, k, gamma, x0, p0, feedback, filt=Non
             cov_xp_arr[i+1] = cov_xp
             exp_x_sq[i+1] = x_sq
             exp_p_sq[i+1] = p_sq
+            
+            if i >= 1:
+                alpha_p = m*(alpha_x_stream[i+1] - alpha_x_stream[i])/del_t
+            else:
+                alpha_p = 0.0
+            alpha_p_stream[i+1] = alpha_p
+
+                
+            
+    
+            #Redefine, x_rot and p_rot using measurement stream values of x and p 
+            if not filt:
+                x_fb = alpha_x
+                p_fb = alpha_p
+            else:
+                x_fb = x
+                p_fb = p
+                
+            x_rot = x_fb*np.cos(w*t_arr[i+1]) - p_fb*np.sin(w*t_arr[i+1])
+            p_rot = x_fb*np.sin(w*t_arr[i+1]) + p_fb*np.cos(w*t_arr[i+1])
+            
+            
+            phi_rot = np.arctan2(p_rot, x_rot)
+            phi_p_rot = np.pi/2 - 2*phi_rot
+
+            w_sq = w**2*(1 - 2*epsilon*np.cos(2*w*t_arr[i+1] + phi_p_rot))
+            
+        
+            
+            
             
         
         
