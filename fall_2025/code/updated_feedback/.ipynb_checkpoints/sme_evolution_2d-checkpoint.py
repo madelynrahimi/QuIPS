@@ -13,19 +13,22 @@ def sme_evolution_2D(del_t,period_number, eta, k, gamma, x0, p0, feedback, fx = 
     m_bead = 4.8e-18 #kg
     hbar = 1.054e-34 #Js
 
-    wx_scale = wx_real
-    wy_scale = wy_real
+    w0 = wx_real
     m_scale = m_bead
-    x_scale_vec = np.array([np.sqrt(hbar/(m_scale*wx_scale)),np.sqrt(hbar/(m_scale*wy_scale))])
-    p_scale_vec = np.array([np.sqrt(hbar*m_scale*wx_scale),np.sqrt(hbar*m_scale*wy_scale)])
+    
+    x_scale = np.sqrt(hbar / (m_scale * w0))
+    p_scale = np.sqrt(hbar * m_scale * w0)
+    t_scale = 1 / w0
+    
+    wx = wx_real / w0    # = 1
+    wy = wy_real / w0    # = fy/fx
+    
+    x_scale_vec = np.array([x_scale, x_scale])
+    p_scale_vec = np.array([p_scale, p_scale])
+    
+    Sx = x_scale * np.eye(2)
+    Sp = p_scale * np.eye(2)
 
-    Sx = np.diag(x_scale_vec)
-    Sp = np.diag(p_scale_vec)
-    
-    
-    
-    wx = wx_real/wx_scale
-    wy = wy_real/wy_scale
     w_arr = np.array([wx, wy]).reshape(2,1)
     w_arr_swapped = w_arr[::-1, :]
     
@@ -232,7 +235,7 @@ def sme_evolution_2D(del_t,period_number, eta, k, gamma, x0, p0, feedback, fx = 
             
             
         
-    t_scale_vec = np.array([1/wx_scale, 1/wy_scale])
+    t_scale_vec = np.array([1/w0, 1/w0])
     t_real_arr = t_arr[:, None] * t_scale_vec[None, :]
     
     exp_x_real = exp_x @ Sx.T
