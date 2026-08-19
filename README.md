@@ -1,0 +1,1 @@
+The quips_repo folder breaks down everything in QUIPS2026spring.ipynb and corresponds to the figures in the Quips 2026 report. QUIPS2026spring.ipynb is the full code I used while working on the simulations detailed in the report throughout the 2025-2026 academic school year. Feel free to email roaa27r@gmail.com if you have any questions. 
